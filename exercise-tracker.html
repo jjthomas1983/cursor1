@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercise Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --surface-hover: #243044;
+      --accent: #22c55e;
+      --accent-dim: #16a34a;
+      --text: #e7e9ea;
+      --text-muted: #8b98a5;
+      --border: #2f3d4d;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .container { max-width: 640px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* Welcome */
+    .welcome-wrap {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+
+    .welcome-wrap h1 {
+      font-size: 1.75rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .welcome-wrap h1::before {
+      content: '';
+      width: 8px;
+      height: 28px;
+      background: linear-gradient(180deg, var(--accent), var(--accent-dim));
+      border-radius: 4px;
+    }
+
+    .welcome-wrap p {
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    .welcome-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 280px;
+      margin: 0 auto;
+    }
+
+    .welcome-buttons .btn-primary,
+    .welcome-buttons .btn-secondary {
+      padding: 0.85rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 10px;
+      text-decoration: none;
+      text-align: center;
+      display: block;
+    }
+
+    /* Add flow */
+    .add-flow-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .add-flow-section h2 {
+      font-size: 1rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-row:last-of-type { margin-bottom: 0; }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    label { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); }
+
+    input, select, textarea {
+      font-family: inherit;
+      font-size: 0.95rem;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+    }
+
+    button {
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button:active { transform: scale(0.98); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0f1419;
+      padding: 0.65rem 1.25rem;
+      font-size: 0.95rem;
+    }
+
+    .btn-primary:hover { background: var(--accent-dim); }
+
+    .btn-secondary {
+      background: var(--surface-hover);
+      color: var(--text);
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover { background: var(--border); }
+
+    .split-choices {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+
+    .split-btn {
+      padding: 1rem;
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .split-btn:hover { border-color: var(--text-muted); }
+
+    .split-btn.selected {
+      border-color: var(--accent);
+      background: rgba(34, 197, 94, 0.1);
+      color: var(--accent);
+    }
+
+    .exercise-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .exercise-row {
+      display: grid;
+      grid-template-columns: 1fr 80px 80px 40px;
+      gap: 0.5rem;
+      align-items: end;
+    }
+
+    .exercise-row .form-group { margin-bottom: 0; }
+
+    .btn-add-row {
+      margin-top: 0.5rem;
+      width: 100%;
+      padding: 0.6rem;
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .btn-add-row:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    .btn-icon:hover { background: var(--surface-hover); color: var(--text); }
+
+    .btn-delete:hover { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+    .add-flow-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .add-flow-actions .btn-secondary { flex: 1; }
+    .add-flow-actions .btn-primary { flex: 1; }
+
+    .link-edit {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.8rem;
+      margin-left: 0.5rem;
+    }
+
+    .link-edit:hover { text-decoration: underline; }
+
+    /* Thank you */
+    .thank-you-wrap {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+
+    .thank-you-wrap h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .thank-you-wrap p { color: var(--text-muted); margin-bottom: 2rem; }
+
+    .thank-you-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 280px;
+      margin: 0 auto;
+    }
+
+    .thank-you-buttons button,
+    .thank-you-buttons a {
+      padding: 0.85rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 10px;
+      text-align: center;
+      display: block;
+      text-decoration: none;
+    }
+
+    /* History */
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .history-header h1 {
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .history-header h1::before {
+      content: '';
+      width: 6px;
+      height: 22px;
+      background: linear-gradient(180deg, var(--accent), var(--accent-dim));
+      border-radius: 3px;
+    }
+
+    .date-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: flex-end;
+      margin-bottom: 1rem;
+    }
+
+    .date-filter .form-group { margin-bottom: 0; }
+
+    .date-group-heading {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 1.25rem 0 0.5rem;
+      padding-bottom: 0.35rem;
+    }
+
+    .date-group-heading:first-child { margin-top: 0; }
+
+    .session-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .session-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+
+    .session-split {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: capitalize;
+    }
+
+    .session-actions {
+      display: flex;
+      gap: 0.35rem;
+    }
+
+    .session-exercises {
+      list-style: none;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .session-exercises li {
+      padding: 0.25rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .session-exercises li:last-child { border-bottom: none; }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--text-muted);
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 1rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal h2 { font-size: 1.15rem; margin-bottom: 1rem; }
+
+    .modal-desc { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem; }
+
+    .modal-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
+
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 101;
+      padding: 1rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+    }
+
+    .confirm-overlay.open { opacity: 1; visibility: visible; }
+
+    .confirm-dialog {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      max-width: 360px;
+    }
+
+    .confirm-dialog p { margin-bottom: 1.25rem; color: var(--text-muted); }
+
+    .confirm-actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      padding: 0.5rem 1rem;
+    }
+
+    .btn-danger:hover { background: rgba(239, 68, 68, 0.25); }
+
+    .combo-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+
+    .combo-list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .combo-add { display: flex; gap: 0.5rem; }
+    .combo-add input { flex: 1; }
+
+    .edit-exercise-rows { margin-top: 0.75rem; }
+    .edit-exercise-row {
+      display: grid;
+      grid-template-columns: 1fr 70px 70px 36px;
+      gap: 0.5rem;
+      align-items: end;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Welcome page -->
+    <div class="page active" id="welcomePage">
+      <div class="welcome-wrap">
+        <h1>Exercise Tracker</h1>
+        <p>Track your workouts by body part and exercises.</p>
+        <div class="welcome-buttons">
+          <button type="button" class="btn-primary" id="btnAddExercise">Add exercise</button>
+          <a href="#" class="btn-secondary" id="btnViewWorkouts">View workouts</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add flow -->
+    <div class="page" id="addFlowPage">
+      <div class="add-flow-section">
+        <h2>1. Select date</h2>
+        <div class="form-group full">
+          <label for="sessionDate">Date</label>
+          <input type="date" id="sessionDate" required>
+        </div>
+      </div>
+
+      <div class="add-flow-section">
+        <h2>2. Which body part?</h2>
+        <div class="split-choices">
+          <button type="button" class="split-btn" data-split="upper">Upper</button>
+          <button type="button" class="split-btn" data-split="lower">Lower</button>
+          <button type="button" class="split-btn" data-split="cardio">Cardio</button>
+        </div>
+      </div>
+
+      <div class="add-flow-section" id="exercisesSection">
+        <h2>3. Add exercises <span id="editExerciseListLink"></span></h2>
+        <div class="exercise-rows" id="exerciseRows"></div>
+        <button type="button" class="btn-add-row" id="btnAddExerciseRow">+ Add another exercise</button>
+      </div>
+
+      <div class="add-flow-actions">
+        <button type="button" class="btn-secondary" id="btnAddFlowCancel">Cancel</button>
+        <button type="button" class="btn-primary" id="btnSaveWorkout">Save workout</button>
+      </div>
+    </div>
+
+    <!-- Thank you -->
+    <div class="page" id="thankYouPage">
+      <div class="thank-you-wrap">
+        <h2>Thank you!</h2>
+        <p>Your workout has been saved.</p>
+        <div class="thank-you-buttons">
+          <button type="button" class="btn-primary" id="btnAddAnother">Add another exercise</button>
+          <a href="#" class="btn-secondary" id="btnThankYouView">View workouts</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="page" id="historyPage">
+      <div class="history-header">
+        <h1>Workouts</h1>
+        <button type="button" class="btn-secondary" id="btnHistoryAdd">Add exercise</button>
+      </div>
+      <div class="date-filter">
+        <div class="form-group">
+          <label for="filterFrom">From</label>
+          <input type="date" id="filterFrom">
+        </div>
+        <div class="form-group">
+          <label for="filterTo">To</label>
+          <input type="date" id="filterTo">
+        </div>
+        <button type="button" class="btn-secondary" id="btnClearFilter">Show all</button>
+      </div>
+      <div id="historyList"></div>
+    </div>
+  </div>
+
+  <!-- Edit session modal -->
+  <div class="modal-overlay" id="editSessionModal">
+    <div class="modal">
+      <h2>Edit workout</h2>
+      <input type="hidden" id="editSessionId">
+      <div class="form-row">
+        <div class="form-group full">
+          <label for="editSessionDate">Date</label>
+          <input type="date" id="editSessionDate">
+        </div>
+      </div>
+      <div class="form-group full">
+        <label>Split</label>
+        <div class="split-choices" id="editSplitChoices"></div>
+      </div>
+      <div class="form-group full">
+        <label>Exercises</label>
+        <div class="edit-exercise-rows" id="editExerciseRows"></div>
+        <button type="button" class="btn-add-row" id="btnEditAddRow">+ Add row</button>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="editSessionCancel">Cancel</button>
+        <button type="button" class="btn-primary" id="editSessionSave">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit exercise list modal (per split) -->
+  <div class="modal-overlay" id="editListModal">
+    <div class="modal">
+      <h2 id="editListTitle">Edit exercises</h2>
+      <p class="modal-desc" id="editListDesc">Add or remove exercises for the dropdown.</p>
+      <div class="combo-list" id="editListItems"></div>
+      <div class="combo-add">
+        <input type="text" id="newListItem" placeholder="New exercise name">
+        <button type="button" class="btn-primary" id="btnAddListItem">Add</button>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="editListClose">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirm -->
+  <div class="confirm-overlay" id="deleteConfirm">
+    <div class="confirm-dialog">
+      <p>Delete this workout? This cannot be undone.</p>
+      <div class="confirm-actions">
+        <button type="button" class="btn-secondary" id="deleteCancel">Cancel</button>
+        <button type="button" class="btn-danger" id="deleteConfirmBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SESSIONS_KEY = 'exercise-tracker-sessions';
+    const UPPER_EXERCISES_KEY = 'exercise-tracker-upper';
+    const LOWER_EXERCISES_KEY = 'exercise-tracker-lower';
+    const CARDIO_EXERCISES_KEY = 'exercise-tracker-cardio';
+
+    const DEFAULT_UPPER = ['Bench Press', 'Row', 'Overhead Press', 'Pull-up', 'Bicep Curl', 'Tricep Pushdown', 'Lat Pulldown', 'Push-up'];
+    const DEFAULT_LOWER = ['Squat', 'Lunge', 'Deadlift', 'Leg Press', 'Leg Curl', 'Calf Raise', 'Hip Thrust', 'Leg Extension'];
+    const DEFAULT_CARDIO = ['Running', 'Cycling', 'Swimming', 'Jump Rope', 'Rowing', 'Walking', 'HIIT'];
+
+    let sessions = JSON.parse(localStorage.getItem(SESSIONS_KEY) || '[]');
+    let upperExercises = JSON.parse(localStorage.getItem(UPPER_EXERCISES_KEY) || JSON.stringify(DEFAULT_UPPER));
+    let lowerExercises = JSON.parse(localStorage.getItem(LOWER_EXERCISES_KEY) || JSON.stringify(DEFAULT_LOWER));
+    let cardioExercises = JSON.parse(localStorage.getItem(CARDIO_EXERCISES_KEY) || JSON.stringify(DEFAULT_CARDIO));
+
+    let selectedSplit = 'upper';
+    let deleteTargetId = null;
+    let editListSplit = null;
+
+    function getExercisesForSplit(split) {
+      if (split === 'upper') return upperExercises;
+      if (split === 'lower') return lowerExercises;
+      return cardioExercises;
+    }
+
+    function saveSessions() {
+      localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
+    }
+
+    function saveExerciseLists() {
+      localStorage.setItem(UPPER_EXERCISES_KEY, JSON.stringify(upperExercises));
+      localStorage.setItem(LOWER_EXERCISES_KEY, JSON.stringify(lowerExercises));
+      localStorage.setItem(CARDIO_EXERCISES_KEY, JSON.stringify(cardioExercises));
+    }
+
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const page = document.getElementById(id);
+      if (page) page.classList.add('active');
+    }
+
+    function escapeHtml(text) {
+      if (text == null) return '';
+      const div = document.createElement('div');
+      div.textContent = String(text);
+      return div.innerHTML;
+    }
+
+    function formatDate(dateStr) {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+    }
+
+    function id() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2);
+    }
+
+    // ---------- Welcome ----------
+    document.getElementById('btnAddExercise').addEventListener('click', () => {
+      document.getElementById('sessionDate').valueAsDate = new Date();
+      selectedSplit = 'upper';
+      resetAddFlow();
+      showPage('addFlowPage');
+    });
+
+    document.getElementById('btnViewWorkouts').addEventListener('click', (e) => {
+      e.preventDefault();
+      renderHistory();
+      showPage('historyPage');
+    });
+
+    // ---------- Add flow: split selection ----------
+    document.querySelectorAll('.split-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.split-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedSplit = btn.dataset.split;
+        renderExerciseRows();
+        updateEditExerciseListLink();
+      });
+    });
+
+    function updateEditExerciseListLink() {
+      const el = document.getElementById('editExerciseListLink');
+      const label = selectedSplit === 'upper' ? 'Upper' : selectedSplit === 'lower' ? 'Lower' : 'Cardio';
+      el.innerHTML = `<a href="#" class="link-edit" id="linkEditList">Edit ${label} list</a>`;
+      document.getElementById('linkEditList').addEventListener('click', (e) => {
+        e.preventDefault();
+        openEditListModal(selectedSplit);
+      });
+    }
+
+    function renderExerciseRows() {
+      const list = getExercisesForSplit(selectedSplit);
+      const container = document.getElementById('exerciseRows');
+      const rows = container.querySelectorAll('.exercise-row');
+      let count = rows.length;
+      if (count === 0) count = 1;
+
+      container.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const row = document.createElement('div');
+        row.className = 'exercise-row';
+        row.innerHTML = `
+          <div class="form-group">
+            <label>Exercise</label>
+            <select class="exercise-select">
+              <option value="">Select...</option>
+              ${list.map(ex => `<option value="${escapeHtml(ex)}">${escapeHtml(ex)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Sets</label>
+            <input type="number" class="exercise-sets" min="1" value="3" placeholder="3">
+          </div>
+          <div class="form-group">
+            <label>Reps</label>
+            <input type="number" class="exercise-reps" min="1" value="10" placeholder="10">
+          </div>
+          <div class="form-group">
+            <button type="button" class="btn-icon btn-delete remove-row" aria-label="Remove">×</button>
+          </div>
+        `;
+        row.querySelector('.remove-row').addEventListener('click', () => {
+          if (container.querySelectorAll('.exercise-row').length > 1) row.remove();
+        });
+        container.appendChild(row);
+      }
+    }
+
+    document.getElementById('btnAddExerciseRow').addEventListener('click', () => {
+      const list = getExercisesForSplit(selectedSplit);
+      const container = document.getElementById('exerciseRows');
+      const row = document.createElement('div');
+      row.className = 'exercise-row';
+      row.innerHTML = `
+        <div class="form-group">
+          <label>Exercise</label>
+          <select class="exercise-select">
+            <option value="">Select...</option>
+            ${list.map(ex => `<option value="${escapeHtml(ex)}">${escapeHtml(ex)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Sets</label>
+          <input type="number" class="exercise-sets" min="1" value="3" placeholder="3">
+        </div>
+        <div class="form-group">
+          <label>Reps</label>
+          <input type="number" class="exercise-reps" min="1" value="10" placeholder="10">
+        </div>
+        <div class="form-group">
+          <button type="button" class="btn-icon btn-delete remove-row" aria-label="Remove">×</button>
+        </div>
+      `;
+      row.querySelector('.remove-row').addEventListener('click', () => {
+        if (container.querySelectorAll('.exercise-row').length > 1) row.remove();
+      });
+      container.appendChild(row);
+    });
+
+    function resetAddFlow() {
+      document.querySelectorAll('.split-btn').forEach(b => b.classList.remove('selected'));
+      document.querySelector(`.split-btn[data-split="${selectedSplit}"]`).classList.add('selected');
+      renderExerciseRows();
+      updateEditExerciseListLink();
+    }
+
+    function collectExercisesFromAddFlow() {
+      const rows = document.querySelectorAll('#exerciseRows .exercise-row');
+      const out = [];
+      rows.forEach(r => {
+        const name = r.querySelector('.exercise-select').value?.trim();
+        const sets = parseInt(r.querySelector('.exercise-sets').value, 10) || 0;
+        const reps = parseInt(r.querySelector('.exercise-reps').value, 10) || 0;
+        if (name) out.push({ name, sets, reps });
+      });
+      return out;
+    }
+
+    document.getElementById('btnSaveWorkout').addEventListener('click', () => {
+      const date = document.getElementById('sessionDate').value;
+      if (!date) {
+        alert('Please select a date.');
+        return;
+      }
+      const exercises = collectExercisesFromAddFlow();
+      if (exercises.length === 0) {
+        alert('Add at least one exercise.');
+        return;
+      }
+      sessions.unshift({
+        id: id(),
+        date,
+        split: selectedSplit,
+        exercises
+      });
+      saveSessions();
+      showPage('thankYouPage');
+    });
+
+    document.getElementById('btnAddFlowCancel').addEventListener('click', () => showPage('welcomePage'));
+
+    // ---------- Thank you ----------
+    document.getElementById('btnAddAnother').addEventListener('click', () => {
+      document.getElementById('sessionDate').value = document.getElementById('sessionDate').value || new Date().toISOString().slice(0, 10);
+      resetAddFlow();
+      showPage('addFlowPage');
+    });
+
+    document.getElementById('btnThankYouView').addEventListener('click', (e) => {
+      e.preventDefault();
+      renderHistory();
+      showPage('historyPage');
+    });
+
+    // ---------- History ----------
+    document.getElementById('btnHistoryAdd').addEventListener('click', () => {
+      document.getElementById('sessionDate').valueAsDate = new Date();
+      selectedSplit = 'upper';
+      resetAddFlow();
+      showPage('addFlowPage');
+    });
+
+    function getFilteredSessions() {
+      const from = document.getElementById('filterFrom').value;
+      const to = document.getElementById('filterTo').value;
+      let list = [...sessions].sort((a, b) => new Date(b.date) - new Date(a.date));
+      if (from) list = list.filter(s => s.date >= from);
+      if (to) list = list.filter(s => s.date <= to);
+      return list;
+    }
+
+    function renderHistory() {
+      const list = getFilteredSessions();
+      const container = document.getElementById('historyList');
+
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <p>No workouts yet.</p>
+            <p>Click "Add exercise" to log a workout.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const byDay = {};
+      list.forEach(s => {
+        if (!byDay[s.date]) byDay[s.date] = [];
+        byDay[s.date].push(s);
+      });
+      const days = Object.keys(byDay).sort((a, b) => new Date(b) - new Date(a));
+
+      container.innerHTML = days.map(day => {
+        const daySessions = byDay[day];
+        const dayLabel = formatDate(day);
+        const cards = daySessions.map(s => `
+          <div class="session-card" data-id="${s.id}">
+            <div class="session-card-header">
+              <span class="session-split">${s.split.charAt(0).toUpperCase() + s.split.slice(1)}</span>
+              <div class="session-actions">
+                <button type="button" class="btn-icon" aria-label="Edit" onclick="openEditSession('${s.id}')">✎</button>
+                <button type="button" class="btn-icon btn-delete" aria-label="Delete" onclick="confirmDeleteSession('${s.id}')">×</button>
+              </div>
+            </div>
+            <ul class="session-exercises">
+              ${(s.exercises || []).map(e => `<li>${escapeHtml(e.name)} — ${e.sets || 0} sets × ${e.reps || 0} reps</li>`).join('')}
+            </ul>
+          </div>
+        `).join('');
+        return `<div class="date-group-heading">${dayLabel}</div>${cards}`;
+      }).join('');
+    }
+
+    document.getElementById('btnClearFilter').addEventListener('click', () => {
+      document.getElementById('filterFrom').value = '';
+      document.getElementById('filterTo').value = '';
+      renderHistory();
+    });
+
+    document.getElementById('filterFrom').addEventListener('change', renderHistory);
+    document.getElementById('filterTo').addEventListener('change', renderHistory);
+
+    function confirmDeleteSession(sessionId) {
+      deleteTargetId = sessionId;
+      document.getElementById('deleteConfirm').classList.add('open');
+    }
+
+    function deleteSession(sessionId) {
+      sessions = sessions.filter(s => s.id !== sessionId);
+      saveSessions();
+      document.getElementById('deleteConfirm').classList.remove('open');
+      deleteTargetId = null;
+      renderHistory();
+    }
+
+    window.confirmDeleteSession = confirmDeleteSession;
+    window.openEditSession = openEditSession;
+
+    document.getElementById('deleteCancel').addEventListener('click', () => {
+      document.getElementById('deleteConfirm').classList.remove('open');
+      deleteTargetId = null;
+    });
+
+    document.getElementById('deleteConfirmBtn').addEventListener('click', () => {
+      if (deleteTargetId) deleteSession(deleteTargetId);
+    });
+
+    function openEditSession(sessionId) {
+      const s = sessions.find(x => x.id === sessionId);
+      if (!s) return;
+      document.getElementById('editSessionId').value = sessionId;
+      document.getElementById('editSessionDate').value = s.date;
+
+      const choicesEl = document.getElementById('editSplitChoices');
+      const rowsEl = document.getElementById('editExerciseRows');
+      let currentEditSplit = s.split;
+
+      choicesEl.innerHTML = ['upper', 'lower', 'cardio'].map(split => `
+        <button type="button" class="split-btn ${s.split === split ? 'selected' : ''}" data-edit-split="${split}">${split.charAt(0).toUpperCase() + split.slice(1)}</button>
+      `).join('');
+
+      function buildEditRows() {
+        const list = getExercisesForSplit(currentEditSplit);
+        const exercises = rowsEl.querySelectorAll('.edit-exercise-row');
+        const existing = [];
+        exercises.forEach(r => {
+          const name = r.querySelector('.edit-ex-select')?.value?.trim();
+          const sets = r.querySelector('.edit-ex-sets')?.value || '3';
+          const reps = r.querySelector('.edit-ex-reps')?.value || '10';
+          if (name || sets || reps) existing.push({ name, sets, reps });
+        });
+        if (existing.length === 0 && (s.exercises || []).length > 0) {
+          (s.exercises || []).forEach(ex => existing.push({ name: ex.name, sets: String(ex.sets || 0), reps: String(ex.reps || 0) }));
+        }
+        if (existing.length === 0) existing.push({ name: '', sets: '3', reps: '10' });
+
+        rowsEl.innerHTML = '';
+        existing.forEach((ex, i) => {
+          const row = document.createElement('div');
+          row.className = 'edit-exercise-row';
+          const optSelected = list.includes(ex.name) ? ex.name : '';
+          row.innerHTML = `
+            <div class="form-group">
+              <select class="edit-ex-select">
+                <option value="">Select...</option>
+                ${list.map(e => `<option value="${escapeHtml(e)}" ${e === optSelected ? 'selected' : ''}>${escapeHtml(e)}</option>`).join('')}
+                ${ex.name && !list.includes(ex.name) ? `<option value="${escapeHtml(ex.name)}" selected>${escapeHtml(ex.name)}</option>` : ''}
+              </select>
+            </div>
+            <div class="form-group"><input type="number" class="edit-ex-sets" min="1" value="${escapeHtml(ex.sets)}"></div>
+            <div class="form-group"><input type="number" class="edit-ex-reps" min="1" value="${escapeHtml(ex.reps)}"></div>
+            <div class="form-group"><button type="button" class="btn-icon btn-delete edit-remove-row">×</button></div>
+          `;
+          row.querySelector('.edit-remove-row').addEventListener('click', () => {
+            if (rowsEl.querySelectorAll('.edit-exercise-row').length > 1) row.remove();
+          });
+          rowsEl.appendChild(row);
+        });
+      }
+
+      choicesEl.querySelectorAll('.split-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          choicesEl.querySelectorAll('.split-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          currentEditSplit = btn.dataset.editSplit;
+          buildEditRows();
+        });
+      });
+
+      buildEditRows();
+
+      document.getElementById('btnEditAddRow').onclick = () => {
+        const list = getExercisesForSplit(currentEditSplit);
+        const row = document.createElement('div');
+        row.className = 'edit-exercise-row';
+        row.innerHTML = `
+          <div class="form-group">
+            <select class="edit-ex-select">
+              <option value="">Select...</option>
+              ${list.map(e => `<option value="${escapeHtml(e)}">${escapeHtml(e)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group"><input type="number" class="edit-ex-sets" min="1" value="3"></div>
+          <div class="form-group"><input type="number" class="edit-ex-reps" min="1" value="10"></div>
+          <div class="form-group"><button type="button" class="btn-icon btn-delete edit-remove-row">×</button></div>
+        `;
+        row.querySelector('.edit-remove-row').addEventListener('click', () => {
+          if (rowsEl.querySelectorAll('.edit-exercise-row').length > 1) row.remove();
+        });
+        rowsEl.appendChild(row);
+      };
+
+      document.getElementById('editSessionModal').classList.add('open');
+
+      document.getElementById('editSessionSave').onclick = () => {
+        const newDate = document.getElementById('editSessionDate').value;
+        const newSplit = document.querySelector('#editSplitChoices .split-btn.selected')?.dataset?.editSplit || s.split;
+        const rows = rowsEl.querySelectorAll('.edit-exercise-row');
+        const newExercises = [];
+        rows.forEach(r => {
+          const name = r.querySelector('.edit-ex-select').value?.trim();
+          const sets = parseInt(r.querySelector('.edit-ex-sets').value, 10) || 0;
+          const reps = parseInt(r.querySelector('.edit-ex-reps').value, 10) || 0;
+          if (name) newExercises.push({ name, sets, reps });
+        });
+        s.date = newDate;
+        s.split = newSplit;
+        s.exercises = newExercises.length ? newExercises : s.exercises;
+        saveSessions();
+        document.getElementById('editSessionModal').classList.remove('open');
+        renderHistory();
+      };
+    }
+
+    document.getElementById('editSessionCancel').addEventListener('click', () => {
+      document.getElementById('editSessionModal').classList.remove('open');
+    });
+
+    // ---------- Edit exercise list modal ----------
+    function openEditListModal(split) {
+      editListSplit = split;
+      const titles = { upper: 'Edit Upper exercises', lower: 'Edit Lower exercises', cardio: 'Edit Cardio exercises' };
+      document.getElementById('editListTitle').textContent = titles[split];
+      document.getElementById('editListDesc').textContent = `Add or remove exercises for the ${split} dropdown.`;
+      const list = getExercisesForSplit(split);
+      const container = document.getElementById('editListItems');
+      container.innerHTML = list.map((name, i) => `
+        <div class="combo-list-item">
+          <span>${escapeHtml(name)}</span>
+          <button type="button" class="btn-icon btn-delete" data-split="${split}" data-index="${i}">×</button>
+        </div>
+      `).join('');
+      container.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.index, 10);
+          const arr = getExercisesForSplit(split);
+          arr.splice(idx, 1);
+          saveExerciseLists();
+          openEditListModal(split);
+        });
+      });
+      document.getElementById('newListItem').value = '';
+      document.getElementById('editListModal').classList.add('open');
+    }
+
+    document.getElementById('btnAddListItem').addEventListener('click', () => {
+      const input = document.getElementById('newListItem');
+      const name = input.value.trim();
+      if (!name || !editListSplit) return;
+      const arr = getExercisesForSplit(editListSplit);
+      if (arr.includes(name)) return;
+      arr.push(name);
+      saveExerciseLists();
+      openEditListModal(editListSplit);
+      input.value = '';
+    });
+
+    document.getElementById('editListClose').addEventListener('click', () => {
+      document.getElementById('editListModal').classList.remove('open');
+      renderExerciseRows();
+      updateEditExerciseListLink();
+    });
+
+    // ---------- Init ----------
+    document.getElementById('sessionDate').valueAsDate = new Date();
+    document.querySelector(`.split-btn[data-split="upper"]`).classList.add('selected');
+    renderExerciseRows();
+    updateEditExerciseListLink();
+  </script>
+</body>
+</html>
